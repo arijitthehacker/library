@@ -116,6 +116,95 @@
   <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
   <script type="text/javascript">
     window.addEventListener('load', function () {
+  let selectedDeviceId;
+  const codeReader = new ZXing.BrowserMultiFormatReader();
+  console.log('ZXing code reader initialized');
+
+  const heightSelect = document.getElementById('heightSelect');
+  const widthSelect = document.getElementById('widthSelect');
+  const aspectRatioSelect = document.getElementById('aspectRatioSelect');
+  const videoElement = document.getElementById('video');
+  const hamburgerMenu = document.getElementById('hamburgerMenu');
+  const menu = document.getElementById('menu');
+
+  const toggleMenu = () => {
+    menu.classList.toggle('open');
+  };
+
+  hamburgerMenu.addEventListener('click', toggleMenu);
+
+  const closeMenu = () => {
+    menu.classList.remove('open');
+  };
+
+  const updateVideoSize = () => {
+    closeMenu();
+    const selectedHeight = heightSelect.value;
+    const selectedWidth = widthSelect.value;
+    const selectedAspectRatio = aspectRatioSelect.value;
+    const [width, height] = selectedAspectRatio.split(':');
+
+    videoElement.height = selectedHeight;
+    videoElement.width = selectedWidth;
+    videoElement.style.aspectRatio = `${width} / ${height}`;
+  };
+
+  heightSelect.addEventListener('change', updateVideoSize);
+  widthSelect.addEventListener('change', updateVideoSize);
+  aspectRatioSelect.addEventListener('change', updateVideoSize);
+
+  codeReader.listVideoInputDevices()
+    .then((videoInputDevices) => {
+      const sourceSelect = document.getElementById('sourceSelect');
+      selectedDeviceId = videoInputDevices[0].deviceId;
+      if (videoInputDevices.length >= 1) {
+        videoInputDevices.forEach((element) => {
+          const sourceOption = document.createElement('option');
+          sourceOption.text = element.label;
+          sourceOption.value = element.deviceId;
+          sourceSelect.appendChild(sourceOption);
+        });
+
+        sourceSelect.onchange = () => {
+          selectedDeviceId = sourceSelect.value;
+        };
+
+        const sourceSelectPanel = document.getElementById('sourceSelectPanel');
+        sourceSelectPanel.style.display = 'block';
+      }
+
+      document.getElementById('startButton').addEventListener('click', () => {
+        codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+          if (result) {
+            console.log(result);
+            document.getElementById('result').textContent = result.text;
+          }
+          if (err && !(err instanceof ZXing.NotFoundException)) {
+            console.error(err);
+            document.getElementById('result').textContent = err;
+          }
+        });
+        console.log(`Started continuous decode from camera with id ${selectedDeviceId}`);
+      });
+
+      document.getElementById('resetButton').addEventListener('click', () => {
+        codeReader.reset();
+        document.getElementById('result').textContent = '';
+        console.log('Reset.');
+      });
+
+      // Close menu when a menu item is clicked
+      const menuItems = document.querySelectorAll('.menu a');
+      menuItems.forEach((item) => {
+        item.addEventListener('click', closeMenu);
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+});
+
+    window.addEventListener('load', function () {
       let selectedDeviceId;
       const codeReader = new ZXing.BrowserMultiFormatReader();
       console.log('ZXing code reader initialized');
