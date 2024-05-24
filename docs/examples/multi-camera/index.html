@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="ZXing for JS">
 
-  <title>Demo BarCode QR Scanner| Decoding from camera stream</title>
+  <title>Demo BarCode QR Scanner | Decoding from camera stream</title>
 
   <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
     href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
@@ -22,18 +22,36 @@
 
     <section class="container" id="demo-content">
       <h1 class="title">Scan 1D/2D Code from Video Camera</h1>
-
-<!--       <p>
-        <a class="button-small button-outline" href="../../index.html">HOME 🏡</a>
-      </p> -->
-
-      <p>If more
-        than one video input devices are available (for example front and back camera) the example shows how to read
-        them and use a select to change the input device.</p>
+      <p>If more than one video input devices are available (for example front and back camera) the example shows how to read them and use a select to change the input device.</p>
 
       <div>
         <a class="button" id="startButton">Start</a>
         <a class="button" id="resetButton">Reset</a>
+      </div>
+
+      <div>
+        <label for="heightSelect">Height:</label>
+        <select id="heightSelect">
+          <option value="200">200</option>
+          <option value="300">300</option>
+          <option value="400">400</option>
+          <option value="500">500</option>
+        </select>
+
+        <label for="widthSelect">Width:</label>
+        <select id="widthSelect">
+          <option value="300">300</option>
+          <option value="400">400</option>
+          <option value="500">500</option>
+          <option value="600">600</option>
+        </select>
+
+        <label for="aspectRatioSelect">Aspect Ratio:</label>
+        <select id="aspectRatioSelect">
+          <option value="4:3">4:3</option>
+          <option value="16:9">16:9</option>
+          <option value="1:1">1:1</option>
+        </select>
       </div>
 
       <div>
@@ -42,77 +60,86 @@
 
       <div id="sourceSelectPanel" style="display:none">
         <label for="sourceSelect">Change video source:</label>
-        <select id="sourceSelect" style="max-width:400px">
-        </select>
+        <select id="sourceSelect" style="max-width:400px"></select>
       </div>
 
       <label>Result:</label>
       <pre><code id="result"></code></pre>
-
-<!--       <p>See the <a href="https://github.com/zxing-js/library/tree/master/docs/examples/multi-camera/">source code</a>
-        for this example.</p> -->
     </section>
-
-<!--     <footer class="footer">
-      <section class="container">
-        <p>ZXing TypeScript Demo. Licensed under the <a target="_blank"
-            href="https://github.com/zxing-js/library#license" title="MIT">MIT</a>.</p>
-      </section>
-    </footer> -->
-
   </main>
 
   <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
   <script type="text/javascript">
     window.addEventListener('load', function () {
       let selectedDeviceId;
-      const codeReader = new ZXing.BrowserMultiFormatReader()
-      console.log('ZXing code reader initialized')
+      const codeReader = new ZXing.BrowserMultiFormatReader();
+      console.log('ZXing code reader initialized');
+      
+      const heightSelect = document.getElementById('heightSelect');
+      const widthSelect = document.getElementById('widthSelect');
+      const aspectRatioSelect = document.getElementById('aspectRatioSelect');
+      const videoElement = document.getElementById('video');
+
+      const updateVideoSize = () => {
+        const selectedHeight = heightSelect.value;
+        const selectedWidth = widthSelect.value;
+        const selectedAspectRatio = aspectRatioSelect.value;
+        const [width, height] = selectedAspectRatio.split(':');
+
+        videoElement.height = selectedHeight;
+        videoElement.width = selectedWidth;
+        videoElement.style.aspectRatio = `${width} / ${height}`;
+      };
+
+      heightSelect.addEventListener('change', updateVideoSize);
+      widthSelect.addEventListener('change', updateVideoSize);
+      aspectRatioSelect.addEventListener('change', updateVideoSize);
+
       codeReader.listVideoInputDevices()
         .then((videoInputDevices) => {
-          const sourceSelect = document.getElementById('sourceSelect')
-          selectedDeviceId = videoInputDevices[0].deviceId
+          const sourceSelect = document.getElementById('sourceSelect');
+          selectedDeviceId = videoInputDevices[0].deviceId;
           if (videoInputDevices.length >= 1) {
             videoInputDevices.forEach((element) => {
-              const sourceOption = document.createElement('option')
-              sourceOption.text = element.label
-              sourceOption.value = element.deviceId
-              sourceSelect.appendChild(sourceOption)
-            })
+              const sourceOption = document.createElement('option');
+              sourceOption.text = element.label;
+              sourceOption.value = element.deviceId;
+              sourceSelect.appendChild(sourceOption);
+            });
 
             sourceSelect.onchange = () => {
               selectedDeviceId = sourceSelect.value;
             };
 
-            const sourceSelectPanel = document.getElementById('sourceSelectPanel')
-            sourceSelectPanel.style.display = 'block'
+            const sourceSelectPanel = document.getElementById('sourceSelectPanel');
+            sourceSelectPanel.style.display = 'block';
           }
 
           document.getElementById('startButton').addEventListener('click', () => {
             codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
               if (result) {
-                console.log(result)
-                document.getElementById('result').textContent = result.text
+                console.log(result);
+                document.getElementById('result').textContent = result.text;
               }
               if (err && !(err instanceof ZXing.NotFoundException)) {
-                console.error(err)
-                document.getElementById('result').textContent = err
+                console.error(err);
+                document.getElementById('result').textContent = err;
               }
-            })
-            console.log(`Started continous decode from camera with id ${selectedDeviceId}`)
-          })
+            });
+            console.log(`Started continuous decode from camera with id ${selectedDeviceId}`);
+          });
 
           document.getElementById('resetButton').addEventListener('click', () => {
-            codeReader.reset()
+            codeReader.reset();
             document.getElementById('result').textContent = '';
-            console.log('Reset.')
-          })
+            console.log('Reset.');
+          });
 
         })
         .catch((err) => {
-          console.error(err)
-        })
-    })
+          console.error(err);
+        });
+    });
   </script>
 
 </body>
