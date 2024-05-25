@@ -14,6 +14,30 @@
     href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
   <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
     href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    .hamburger {
+      display: none;
+      cursor: pointer;
+      font-size: 1.5em;
+      margin: 1em;
+    }
+    .dropdown-menu {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    @media (max-width: 768px) {
+      .dropdown-menu {
+        display: none;
+      }
+      .hamburger {
+        display: block;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -29,7 +53,8 @@
         <a class="button" id="resetButton">Reset</a>
       </div>
 
-      <div>
+      <div class="hamburger" id="hamburger">&#9776;</div>
+      <div class="dropdown-menu" id="dropdown-menu">
         <label for="heightSelect">Height:</label>
         <select id="heightSelect">
           <option value="200">200</option>
@@ -52,15 +77,15 @@
           <option value="16:9">16:9</option>
           <option value="1:1">1:1</option>
         </select>
+
+        <div id="sourceSelectPanel" style="display:none">
+          <label for="sourceSelect">Change video source:</label>
+          <select id="sourceSelect" style="max-width:400px"></select>
+        </div>
       </div>
 
       <div>
         <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
-      </div>
-
-      <div id="sourceSelectPanel" style="display:none">
-        <label for="sourceSelect">Change video source:</label>
-        <select id="sourceSelect" style="max-width:400px"></select>
       </div>
 
       <label>Result:</label>
@@ -74,7 +99,7 @@
       let selectedDeviceId;
       const codeReader = new ZXing.BrowserMultiFormatReader();
       console.log('ZXing code reader initialized');
-      
+
       const heightSelect = document.getElementById('heightSelect');
       const widthSelect = document.getElementById('widthSelect');
       const aspectRatioSelect = document.getElementById('aspectRatioSelect');
@@ -139,6 +164,15 @@
         .catch((err) => {
           console.error(err);
         });
+
+      document.getElementById('hamburger').addEventListener('click', () => {
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        if (dropdownMenu.style.display === 'none' || dropdownMenu.style.display === '') {
+          dropdownMenu.style.display = 'flex';
+        } else {
+          dropdownMenu.style.display = 'none';
+        }
+      });
     });
   </script>
 
